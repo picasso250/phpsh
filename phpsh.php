@@ -21,9 +21,10 @@ function trim_function(&$code) {
     $changed = false;
     $code = preg_replace_callback('/(\w+)\s*\(\s*(\$?\w+|^[\d.e]+)\s*\)/', function ($m) use (&$changed) {
         if (in_array($m[1], array('if', 'while', 'do', 'for'))) {
-
+            return $m[0];
         } else {
             $changed = true;
+            return 'X';
         }
     }, $code);
     return $changed;
