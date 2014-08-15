@@ -93,7 +93,7 @@ while (true) {
         eval($code);
     }
     if (isset($__rs)) {
-        echo "$__rs\n";
+        var_dump($__rs);
         unset($__rs);
     }
 }
