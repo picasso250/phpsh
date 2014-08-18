@@ -12,6 +12,14 @@ function trim_string(&$code) {
     $code = preg_replace('/"[^"]*?"|'."'[^']*?'".'/', 'X', $code);
     return $rs;
 }
+
+function trim_comment(&$code) {
+    $regex = '%//.+$|/\*.+\*/%';
+    $rs = preg_match($regex, $code);
+    $code = trim(preg_replace($regex, '', $code));
+    return $rs;
+}
+
 function trim_params(&$code) {
     $rs = strpos($code, ',') !== false;
     $code = preg_replace('/(\$?\w+|^[\d.e]+)(,\s*(\$?\w+|^[\d.e]+))+/', 'X', $code);
@@ -39,6 +47,7 @@ function formulize($code) {
         $changed = false;
         $changed |= trim_backslash($code);
         $changed |= trim_string($code);
+        $changed |= trim_comment($code);
         $changed |= trim_params($code);
         $changed |= trim_function($code);
         // $changed |= trim_expression($code);
@@ -48,6 +57,7 @@ function formulize($code) {
     }
     return $code;
 }
+
 function is_expression($code)
 {
     $code = formulize($code);
