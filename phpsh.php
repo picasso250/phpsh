@@ -1,3 +1,4 @@
+#!php
 <?php
 
 function trim_backslash(&$code)
@@ -75,7 +76,7 @@ function complete_expr($code) {
     }
     $last_char = $code[strlen($code)-1];
     if (is_expression($code)) {
-        $code = '$__rs = '.$code;
+        $code = '$_ = '.$code;
     }
     if ($last_char !== ';' && $last_char !== '}') {
         $code .= ';';
@@ -91,10 +92,52 @@ function execute_command($cmd)
     }
 }
 
+$help_msg = '-- Help --
+Type php commands and they will be evaluted each time you hit enter. Ex:
+php> $msg = "hello world"
+
+Evaluate expression. Ex:
+php> 2 + 2
+int(4)
+
+phpsh will print any returned value and also assign the last
+returned value to the variable $_.
+
+You can enter multiline input, such as a multiline if statement.  phpsh will
+accept further lines until you complete a full statement, or it will error if
+your partial statement has no syntactic completion.  You may also use ^C to
+cancel a partial statement.
+
+You can use tab to autocomplete function names, global variable names,
+constants, classes, and interfaces.  If you are using ctags, then you can hit
+tab again after you\'ve entered the name of a function, and it will show you
+the signature for that function.  phpsh also supports all the normal
+readline features, like ctrl-e, ctrl-a, and history (up, down arrows).
+
+Note that stdout and stderr from the underlying php process are line-buffered;
+so  php> for ($i = 0; $i < 3; $i++) {echo "."; sleep(1);}
+will print the three dots all at once after three seconds.
+(echo ".
+" would print one a second.)
+
+See phpsh -h for invocation options.
+
+-- phpsh quick command list --
+    h     Display this help text.
+    q     Quit (ctrl-D also quits)
+';
 while (true) {
     echo "phpsh > ";
-    $str = fread(STDIN,1000);
+    $str = fread(STDIN, 1000);
+    if (feof(STDIN)) {
+        echo "\n";
+        break;
+    }
     if (empty($str)) {
+        continue;
+    }
+    if (trim($str) === 'h') {
+        echo "$help_msg\n";
         continue;
     }
     list($cmd, $code) = complete_expr($str);
