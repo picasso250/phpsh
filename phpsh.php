@@ -71,7 +71,7 @@ function complete_expr($code) {
     if (empty($code)) {
         return array(null, null);
     }
-    if (in_array($code, array('quit'))) {
+    if (in_array($code, array('q'))) {
         return array($code, null);
     }
     $last_char = $code[strlen($code)-1];
@@ -87,7 +87,7 @@ function complete_expr($code) {
 
 function execute_command($cmd)
 {
-    if ($cmd === 'quit') {
+    if ($cmd === 'q') {
         exit();
     }
 }
@@ -126,16 +126,29 @@ See phpsh -h for invocation options.
     h     Display this help text.
     q     Quit (ctrl-D also quits)
 ';
+$php_func_list = file("func.txt");
+readline_completion_function(
+    function ($buffer, $pos) use ($php_func_list) {
+        $ret = [];
+        foreach ($php_func_list as $word) {
+            if (strpos($word, $buffer) === 0 && $word !== $buffer) {
+                $ret[] = $word;
+            }
+        }
+        return array_slice($ret, 0, 3);
+    }
+);
 while (true) {
-    echo "phpsh > ";
-    $str = fread(STDIN, 1000);
-    if (feof(STDIN)) {
+    $str = readline("phpsh > ");
+    // $str = fread(STDIN, 1000);
+    if ($str === false) { // EOF
         echo "\n";
         break;
     }
-    if (empty($str)) {
+    if ("" === trim($str)) {
         continue;
     }
+    readline_add_history($str);
     if (trim($str) === 'h') {
         echo "$help_msg\n";
         continue;
@@ -146,8 +159,8 @@ while (true) {
     } elseif ($code) {
         eval($code);
     }
-    if (isset($__rs)) {
-        var_dump($__rs);
-        unset($__rs);
+    if (isset($_)) {
+        var_dump($_);
+        unset($_);
     }
 }
